@@ -5,4 +5,4 @@
       - pwd
       - ls -la
       - nvidia-smi
-- python --version
+      - python --version
