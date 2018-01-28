@@ -5,4 +5,5 @@
       - pwd
       - ls -la
       - nvidia-smi
-      - python --version
+      - python3 --version
+      - python3 check_devices.py
