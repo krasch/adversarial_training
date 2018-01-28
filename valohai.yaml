@@ -1,6 +1,6 @@
 - step:
     name: Worker environment check
-    image: gcr.io/tensorflow/tensorflow:1.3.0-devel-gpu
+    image: gw000/keras:2.1.3-py3-tf-gpu
     command:
       - pwd
       - ls -la
