@@ -11,6 +11,7 @@ class JSONLogger(Callback):
     def on_epoch_end(self, epoch, logs=None):
         logs = {key: value for key, value in logs.items() if key not in ["size", "batch"]}
         logs["samples"] = self.samples_seen
+        logs["epoch"] = epoch
         print(logs)
 
     def on_batch_end(self, batch, logs=None):
