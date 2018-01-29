@@ -9,3 +9,9 @@
       - python -c "from tensorflow.python.client import device_lib; device_lib.list_local_devices();"
       - nvcc --version | grep release
       - cat /proc/driver/nvidia/version
+
+- step:
+   name: create-adversarial
+   image: valohai/keras:2.0.0-tensorflow1.0.1-python3.6-cuda8.0-cudnn5-devel-ubuntu16.04
+   command:
+      - python create_adversarial.py
