@@ -1,22 +1,28 @@
-import os
-"""
-from tensorflow.examples.tutorials.mnist import input_data
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 
-inputs_dir = os.getenv('VH_INPUTS_DIR', 'data')
-data_set_files = [
-    os.path.join(inputs_dir, 'training-set-images/train-images-idx3-ubyte.gz'),
-    os.path.join(inputs_dir, 'training-set-labels/train-labels-idx1-ubyte.gz'),
-    os.path.join(inputs_dir, 'test-set-images/t10k-images-idx3-ubyte.gz'),
-    os.path.join(inputs_dir, 'test-set-labels/t10k-labels-idx1-ubyte.gz'),
-]
+from data import load_mnist
 
 
-mnist = input_data.read_data_sets(inputs_dir, one_hot=True)
-print(mnist.train)
-"""
+def make_model():
+    model = Sequential()
+    model.add(Conv2D(32, kernel_size=(3, 3),
+                     activation='relu',
+                     input_shape=(28,28,1)))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(10, activation='softmax'))
 
-from keras.datasets import mnist
-mnist.load_data()
+    model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.summary()
 
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
-print(X_train.shape)
+    return model
+
+
+(X_train, y_train), (X_test, y_test) = load_mnist()
+model = make_model()
+model.fit(X_train, y_train, batch_size=128, epochs=20, verbose=1, validation_data=(X_test, y_test))
