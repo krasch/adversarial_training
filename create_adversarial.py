@@ -1,5 +1,6 @@
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
+from keras.models import load_model
 
 from data import load_mnist
 from util import JSONLogger
@@ -24,6 +25,7 @@ def make_model():
 
 (X_train, y_train), (X_test, y_test) = load_mnist()
 model = make_model()
-model.fit(X_train, y_train, batch_size=64, epochs=20,
+model.fit(X_train, y_train, batch_size=64, epochs=2,
           validation_data=(X_test, y_test),
           callbacks=[JSONLogger()], verbose=0)
+# model = load_model("mnist_model.h5")
