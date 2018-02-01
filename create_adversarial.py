@@ -33,7 +33,7 @@ def init_mnist_model(pretrained=False):
         model.summary()
 
         (X_train, y_train), (X_test, y_test) = load_mnist()
-        model.fit(X_train, y_train, batch_size=64, epochs=2,
+        model.fit(X_train, y_train, batch_size=64, epochs=20,
                   validation_data=(X_test, y_test),
                   callbacks=[JSONLogger()], verbose=0)
 
