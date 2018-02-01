@@ -77,7 +77,7 @@ def test_model_strength(model, attack, test_images, test_labels, epsilon):
         for target_label in set(range(10)) - set(label):
             adversarial = attack.generate_adversarial(img, target_label, epsilon)
             new_label, _ = classify(model, adversarial)
-            outcome.append(new_label != label)
+            outcome.append(new_label == target_label)
 
     print(json.dumps({"epsilon": epsilon, "success_rate": np.array(outcome).mean()}))
 
