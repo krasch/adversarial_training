@@ -109,7 +109,7 @@ def main():
         adversarial_label, _ = classify(model, adversarial)
 
         adversarial = denormalise(adversarial)
-        Image.fromarray(adversarial).save("adversarials/test{}_classified_as_{}.jpg".format(i, adversarial_label))
+        Image.fromarray(adversarial).save("/valohai/outputs/test{}_classified_as_{}.jpg".format(i, adversarial_label))
 
 main()
 
