@@ -14,4 +14,5 @@
    name: create-adversarial
    image: valohai/keras:2.0.0-tensorflow1.0.1-python3.6-cuda8.0-cudnn5-devel-ubuntu16.04
    command:
+      - pip install pillow
       - python create_adversarial.py
