@@ -18,6 +18,7 @@ print(mnist.train)
 
 from keras.datasets import mnist
 from keras.utils import np_utils
+import numpy as np
 
 
 def load_mnist():
@@ -34,3 +35,13 @@ def load_mnist():
     y_test = np_utils.to_categorical(y_test, 10)
 
     return (X_train, y_train), (X_test, y_test)
+
+
+def denormalise(img):
+    denormed = np.zeros((28, 28, 3))
+    denormed[:, :, 0] = img.reshape((28, 28))
+    denormed[:, :, 1] = img.reshape((28, 28))
+    denormed[:, :, 2] = img.reshape((28, 28))
+    denormed = denormed * 255
+    denormed = denormed.astype(np.uint8)
+    return denormed

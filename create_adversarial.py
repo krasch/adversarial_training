@@ -1,10 +1,13 @@
+import json
+
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.models import load_model
 from keras import backend as K
 import numpy as np
+# import scipy.misc
 
-from data import load_mnist
+from data import load_mnist, denormalise
 from util import JSONLogger
 
 pixel_min = 0.0
@@ -37,38 +40,60 @@ def init_mnist_model(pretrained=False):
         return model
 
 
-def init_get_gradient(model):
-    get_gradient_functions = {}
-    for target_class in range(10):
-        cost_function = model.output[0, target_class]
-        gradient_function = K.gradients(cost_function, model.input)[0]
-        get_gradient_functions[target_class] = K.function([model.input, K.learning_phase()], [gradient_function])
+class FGSM:
+    def __init__(self, model):
+        self.model = model
+        self.gradient_functions = {}
 
-    def apply(img, target_class):
-        func = get_gradient_functions[target_class]
-        return func([np.array([img]), 0])[0][0, :]
+    def generate_adversarial(self, original_image, target_class, epsilon):
+        if target_class not in self.gradient_functions:
+            self.gradient_functions[target_class] = self._init_gradient_function_(target_class)
 
-    return apply
+        pertubation = np.sign(self.gradient_functions[target_class](original_image))
+        adversarial = original_image + epsilon * pertubation
+        return np.clip(adversarial, pixel_min, pixel_max)
+
+    def _init_gradient_function_(self, target_class):
+        cost_function = self.model.output[0, target_class]
+        gradient_function = K.gradients(cost_function, self.model.input)[0]
+        func = K.function([self.model.input, K.learning_phase()], [gradient_function])
+
+        def apply(img):
+            return func([np.array([img]), 0])[0][0, :]
+
+        return apply
 
 
-def FGSM(original_image, get_gradient, target_class, epsilon):
-    pertubation = np.sign(get_gradient(original_image, target_class))
-    adversarial = original_image + epsilon * pertubation
-    return np.clip(adversarial, pixel_min, pixel_max)
+def classify(model, img):
+    score = model.predict(np.array([img]))[0]
+    idx = np.argmax(score)
+    return idx, score[idx]
+
+
+def test_model_strength(model, attack, test_images, test_labels, epsilon):
+    outcome = []
+
+    for img, label in zip(test_images, test_labels):
+        for target_label in set(range(10)) - set(label):
+            adversarial = attack.generate_adversarial(img, target_label, epsilon)
+            new_label, _ = classify(model, adversarial)
+            outcome.append(new_label != label)
+
+    print(json.dumps({"epsilon": epsilon, "success_rate": np.array(outcome).mean()}))
+
 
 
 def main():
     model = init_mnist_model(pretrained=False)
-    """
-    get_gradient = init_get_gradient(model)
+    attack = FGSM(model)
 
     _, (X_test, y_test) = load_mnist()
+    for epsilon in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        test_model_strength(model, attack, X_test[0:100], y_test[0:100], epsilon=epsilon)
 
-    for i in range(10):
-        adversarial = FGSM(X_test[i], get_gradient, 4, epsilon=0.3)
-
-        scipy.misc.imsave("zebra_adversarial2.jpg", adversarial)
-    """
+    #for i in range(10):
+    #    adversarial = attack.generate_adversarial(X_test[i], target_class=4, epsilon=0.3)
+    #    scipy.misc.imsave("generated/adversarial{}.jpg".format(i), denormalise(adversarial))
 
 main()
 
