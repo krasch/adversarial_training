@@ -35,7 +35,7 @@ def init_mnist_model(pretrained=False):
         model.summary()
 
         (X_train, y_train), (X_test, y_test) = load_mnist()
-        model.fit(X_train, y_train, batch_size=64, epochs=1,
+        model.fit(X_train, y_train, batch_size=64, epochs=10,
                   validation_data=(X_test, y_test),
                   callbacks=[JSONLogger()], verbose=0)
 
@@ -80,11 +80,11 @@ def classify(model, img):
     return idx, score[idx]
 
 
-def test_model_strength(model, attack, test_images, test_labels, epsilon):
+def test_model_resilience(model, attack, test_images, test_labels, epsilon):
     outcome = []
 
     for img, label in zip(test_images, test_labels):
-        adversarial = attack.targeted_adversarial(img, label, epsilon)
+        adversarial = attack.untargeted_adversarial(img, label.argmax(), epsilon)
         adversarial_label, _ = classify(model, adversarial)
         outcome.append(label != adversarial_label)
 
@@ -96,13 +96,11 @@ def main():
     model = init_mnist_model(pretrained=False)
     attack = FGSM(model)
 
-
     _, (X_test, y_test) = load_mnist()
-    """
     for epsilon in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-        test_model_strength(model, attack, X_test[0:100], y_test[0:100], epsilon=epsilon)
-    """
+        test_model_resilience(model, attack, X_test[0:100], y_test[0:100], epsilon=epsilon)
 
+    """
     pathlib.Path('adversarials').mkdir(parents=True, exist_ok=True)
     for i in range(10):
         adversarial = attack.untargeted_adversarial(X_test[i], y_test[i].argmax(), epsilon=0.3)
@@ -110,6 +108,7 @@ def main():
 
         adversarial = denormalise(adversarial)
         Image.fromarray(adversarial).save("/valohai/outputs/test{}_classified_as_{}.jpg".format(i, adversarial_label))
+    """
 
 main()
 
